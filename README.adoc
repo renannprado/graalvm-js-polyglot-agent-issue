@@ -138,3 +138,9 @@ org.apache.commons.exec.ExecuteException: Process exited with an error: 1 (Exit 
  openjdk 17.0.3 2022-04-19
  OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
  OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
+
+.Maven
+ Maven home: /home/renann/.sdkman/candidates/maven/current
+ Java version: 17.0.3, vendor: GraalVM Community, runtime: /home/renann/.sdkman/candidates/java/22.1.0.r17-grl
+ Default locale: en_US, platform encoding: UTF-8
+ OS name: "linux", version: "5.10.0-13-amd64", arch: "amd64", family: "unix"
