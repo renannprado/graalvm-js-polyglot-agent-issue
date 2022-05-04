@@ -1,0 +1,140 @@
+== GraalVM JS Polyglot Tracing Agent Issue
+
+=== Context
+
+I rely a lot on the GraalVM tracing agent to generate the native image configuration files and then compile applications with it.
+While trying to use the agent in a polyglot application, I've found the below issue, which I believe it could be a bug.
+
+== Reproducing
+
+Run the below command:
+
+ mvn -Pnative -Dagent=true -DskipTests -DskipNativeBuild=true package exec:exec@java-agent
+
+Exception:
+
+```
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------< dev.renann:graalvm-js-polyglot-agent-issue >-------------
+[INFO] Building graalvm-js-polyglot-agent-issue 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 1 source file to /home/renann/development/opensource/graalvm-js-polyglot-agent-issue/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/renann/development/opensource/graalvm-js-polyglot-agent-issue/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.8.1:testCompile (default-testCompile) @ graalvm-js-polyglot-agent-issue ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.22.2:test (default-test) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:3.2.0:jar (default-jar) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Building jar: /home/renann/development/opensource/graalvm-js-polyglot-agent-issue/target/graalvm-js-polyglot-agent-issue-1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- native-maven-plugin:0.9.11:build (build-native) @ graalvm-js-polyglot-agent-issue ---
+[INFO] Skipping native-image generation (parameter 'skipNativeBuild' is true).
+[INFO] 
+[INFO] --- exec-maven-plugin:3.0.0:exec (java-agent) @ graalvm-js-polyglot-agent-issue ---
+Exception in thread "main" java.lang.Error: The class ImageSingletons can only be used when building native images, i.e., when using the native-image command.
+	at org.graalvm.sdk/org.graalvm.nativeimage.impl.ImageSingletonsSupport.checkInstalled(ImageSingletonsSupport.java:69)
+	at org.graalvm.sdk/org.graalvm.nativeimage.impl.ImageSingletonsSupport.get(ImageSingletonsSupport.java:63)
+	at org.graalvm.sdk/org.graalvm.nativeimage.ImageSingletons.contains(ImageSingletons.java:109)
+	at org.graalvm.sdk/org.graalvm.home.HomeFinder.getInstance(HomeFinder.java:98)
+	at org.graalvm.locator/com.oracle.graalvm.locator.GraalVMLocator.getLanguagesLoader(GraalVMLocator.java:141)
+	at org.graalvm.locator/com.oracle.graalvm.locator.GraalVMLocator.locate(GraalVMLocator.java:205)
+	at org.graalvm.truffle/com.oracle.truffle.api.impl.TruffleLocator.loaders(TruffleLocator.java:76)
+	at org.graalvm.truffle/com.oracle.truffle.polyglot.EngineAccessor.locatorLoaders(EngineAccessor.java:142)
+	at org.graalvm.truffle/com.oracle.truffle.polyglot.EngineAccessor.locatorOrDefaultLoaders(EngineAccessor.java:161)
+	at org.graalvm.truffle/com.oracle.truffle.polyglot.EngineAccessor$EngineImpl.loadServices(EngineAccessor.java:284)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.loadExternalDefaultProviders(LibraryFactory.java:439)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.getExternalDefaultProviders(LibraryFactory.java:430)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.initDefaultExports(LibraryFactory.java:221)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.<init>(LibraryFactory.java:216)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.DynamicDispatchLibraryGen.<init>(DynamicDispatchLibraryGen.java:31)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.DynamicDispatchLibraryGen.<clinit>(DynamicDispatchLibraryGen.java:23)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:467)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.loadGeneratedClass(LibraryFactory.java:791)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.resolveImpl(LibraryFactory.java:740)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.resolve(LibraryFactory.java:733)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.<init>(LibraryFactory.java:210)
+	at org.graalvm.truffle/com.oracle.truffle.api.interop.InteropLibraryGen.<init>(InteropLibraryGen.java:172)
+	at org.graalvm.truffle/com.oracle.truffle.api.interop.InteropLibraryGen.<clinit>(InteropLibraryGen.java:163)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:467)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.loadGeneratedClass(LibraryFactory.java:791)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.resolveImpl(LibraryFactory.java:740)
+	at org.graalvm.truffle/com.oracle.truffle.api.library.LibraryFactory.resolve(LibraryFactory.java:733)
+	at org.graalvm.truffle/com.oracle.truffle.api.interop.InteropLibrary.<clinit>(InteropLibrary.java:2831)
+	at org.graalvm.truffle/com.oracle.truffle.polyglot.PolyglotValueDispatch.<clinit>(PolyglotValueDispatch.java:156)
+	at org.graalvm.truffle/com.oracle.truffle.polyglot.PolyglotImpl.initialize(PolyglotImpl.java:166)
+	at org.graalvm.sdk/org.graalvm.polyglot.impl.AbstractPolyglotImpl.setConstructors(AbstractPolyglotImpl.java:266)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine$1.loadAndValidateProviders(Engine.java:895)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine$1.run(Engine.java:868)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine$1.run(Engine.java:862)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:318)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine.initEngineImpl(Engine.java:862)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine$ImplHolder.<clinit>(Engine.java:136)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine.getImpl(Engine.java:360)
+	at org.graalvm.sdk/org.graalvm.polyglot.Engine$Builder.build(Engine.java:616)
+	at org.graalvm.sdk/org.graalvm.polyglot.Context$Builder.build(Context.java:1822)
+	at dev.renann.Main.main(Main.java:8)
+[ERROR] Command execution failed.
+org.apache.commons.exec.ExecuteException: Process exited with an error: 1 (Exit value: 1)
+    at org.apache.commons.exec.DefaultExecutor.executeInternal (DefaultExecutor.java:404)
+    at org.apache.commons.exec.DefaultExecutor.execute (DefaultExecutor.java:166)
+    at org.codehaus.mojo.exec.ExecMojo.executeCommandLine (ExecMojo.java:982)
+    at org.codehaus.mojo.exec.ExecMojo.executeCommandLine (ExecMojo.java:929)
+    at org.codehaus.mojo.exec.ExecMojo.execute (ExecMojo.java:457)
+    at org.apache.maven.plugin.DefaultBuildPluginManager.executeMojo (DefaultBuildPluginManager.java:137)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.doExecute (MojoExecutor.java:301)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:211)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:165)
+    at org.apache.maven.lifecycle.internal.MojoExecutor.execute (MojoExecutor.java:157)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:121)
+    at org.apache.maven.lifecycle.internal.LifecycleModuleBuilder.buildProject (LifecycleModuleBuilder.java:81)
+    at org.apache.maven.lifecycle.internal.builder.singlethreaded.SingleThreadedBuilder.build (SingleThreadedBuilder.java:56)
+    at org.apache.maven.lifecycle.internal.LifecycleStarter.execute (LifecycleStarter.java:127)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:294)
+    at org.apache.maven.DefaultMaven.doExecute (DefaultMaven.java:192)
+    at org.apache.maven.DefaultMaven.execute (DefaultMaven.java:105)
+    at org.apache.maven.cli.MavenCli.execute (MavenCli.java:960)
+    at org.apache.maven.cli.MavenCli.doMain (MavenCli.java:293)
+    at org.apache.maven.cli.MavenCli.main (MavenCli.java:196)
+    at jdk.internal.reflect.NativeMethodAccessorImpl.invoke0 (Native Method)
+    at jdk.internal.reflect.NativeMethodAccessorImpl.invoke (NativeMethodAccessorImpl.java:77)
+    at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke (DelegatingMethodAccessorImpl.java:43)
+    at java.lang.reflect.Method.invoke (Method.java:568)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launchEnhanced (Launcher.java:282)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.launch (Launcher.java:225)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.mainWithExitCode (Launcher.java:406)
+    at org.codehaus.plexus.classworlds.launcher.Launcher.main (Launcher.java:347)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.724 s
+[INFO] Finished at: 2022-05-04T18:29:30+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.codehaus.mojo:exec-maven-plugin:3.0.0:exec (java-agent) on project graalvm-js-polyglot-agent-issue: Command execution failed.: Process exited with an error: 1 (Exit value: 1) -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+```
+
+.GraalVM Version
+ openjdk 17.0.3 2022-04-19
+ OpenJDK Runtime Environment GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06)
+ OpenJDK 64-Bit Server VM GraalVM CE 22.1.0 (build 17.0.3+7-jvmci-22.1-b06, mixed mode, sharing)
