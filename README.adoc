@@ -1,5 +1,11 @@
 == GraalVM JS Polyglot Tracing Agent Issue
 
+== Issue Status
+
+The issue has been fixed!
+
+https://github.com/oracle/graal/issues/4534
+
 === Context
 
 I rely a lot on the GraalVM tracing agent to generate the native image configuration files and then compile applications with it.
